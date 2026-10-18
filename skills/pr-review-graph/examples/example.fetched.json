@@ -1,0 +1,162 @@
+{
+ "fetched_at": "2026-01-15T09:30:00Z",
+ "items": {
+  "acme/rocket#101": {
+   "number": 101,
+   "title": "Core loader: example change",
+   "state": "OPEN",
+   "isDraft": true,
+   "url": "https://github.com/acme/rocket/pull/101",
+   "headRefName": "loader",
+   "headRefOid": "93d86bc08a3765fa5326771d912e8d5126a42164",
+   "baseRefName": "release/2.0",
+   "ci": "green",
+   "patch_id": "aa88268b597d"
+  },
+  "acme/rocket#102": {
+   "number": 102,
+   "title": "Engine api: example change",
+   "state": "OPEN",
+   "isDraft": true,
+   "url": "https://github.com/acme/rocket/pull/102",
+   "headRefName": "engine-api",
+   "headRefOid": "00db7b51a852e6fbb0a9366df725c6713570ff0d",
+   "baseRefName": "loader",
+   "ci": "green",
+   "patch_id": "512576bee7e1"
+  },
+  "acme/rocket#103": {
+   "number": 103,
+   "title": "Engine io: example change",
+   "state": "OPEN",
+   "isDraft": true,
+   "url": "https://github.com/acme/rocket/pull/103",
+   "headRefName": "engine-io",
+   "headRefOid": "ec950861e62196dd8ade7d0636bf878e0f4ffdb0",
+   "baseRefName": "engine-api",
+   "ci": "green",
+   "patch_id": "222222222222"
+  },
+  "acme/rocket#104": {
+   "number": 104,
+   "title": "Engine cli: example change",
+   "state": "OPEN",
+   "isDraft": true,
+   "url": "https://github.com/acme/rocket/pull/104",
+   "headRefName": "engine-cli",
+   "headRefOid": "4e546f957df3dacf48dd4f79895bcaa0c3aae2ce",
+   "baseRefName": "engine-io",
+   "ci": "green",
+   "patch_id": "9b6825480e13"
+  },
+  "acme/rocket#105": {
+   "number": 105,
+   "title": "Plugin host: example change",
+   "state": "OPEN",
+   "isDraft": true,
+   "url": "https://github.com/acme/rocket/pull/105",
+   "headRefName": "plugin-host",
+   "headRefOid": "d229c7a162c8ce780a2e811a3bb93c2643662a5c",
+   "baseRefName": "loader",
+   "ci": "green",
+   "patch_id": "7715017b709b"
+  },
+  "acme/rocket#106": {
+   "number": 106,
+   "title": "Plugin sdk: example change",
+   "state": "OPEN",
+   "isDraft": true,
+   "url": "https://github.com/acme/rocket/pull/106",
+   "headRefName": "plugin-sdk",
+   "headRefOid": "bdd00f2f643edf599fe6a28485d5e96227a3cec9",
+   "baseRefName": "plugin-host",
+   "ci": "running",
+   "patch_id": "b92917c86213"
+  },
+  "acme/rocket#107": {
+   "number": 107,
+   "title": "Fix timeouts: example change",
+   "state": "OPEN",
+   "isDraft": true,
+   "url": "https://github.com/acme/rocket/pull/107",
+   "headRefName": "fix-timeouts",
+   "headRefOid": "7753717298dfaab63688a0899c96fdad3a558694",
+   "baseRefName": "loader",
+   "ci": "green",
+   "patch_id": "3ff901cb810b"
+  },
+  "acme/rocket#108": {
+   "number": 108,
+   "title": "Fix retries: example change",
+   "state": "OPEN",
+   "isDraft": true,
+   "url": "https://github.com/acme/rocket/pull/108",
+   "headRefName": "fix-retries",
+   "headRefOid": "ca56edcbf32b2ffad3a9d230cdeabe4afc1420f8",
+   "baseRefName": "loader",
+   "ci": "green",
+   "patch_id": "b21a15c57aa4"
+  },
+  "acme/rocket#109": {
+   "number": 109,
+   "title": "Fix logging: example change",
+   "state": "OPEN",
+   "isDraft": true,
+   "url": "https://github.com/acme/rocket/pull/109",
+   "headRefName": "fix-logging",
+   "headRefOid": "d1a7686ffdff8b8471e6384c71ad0b7f3ce49b79",
+   "baseRefName": "loader",
+   "ci": "green",
+   "patch_id": "999999999999"
+  },
+  "acme/rocket#112": {
+   "number": 112,
+   "title": "Drop old loader: example change",
+   "state": "OPEN",
+   "isDraft": true,
+   "url": "https://github.com/acme/rocket/pull/112",
+   "headRefName": "drop-old-loader",
+   "headRefOid": "7e3bf18186076200fad4ff49cefed4bd1d69134c",
+   "baseRefName": "release/2.0-all",
+   "ci": "green",
+   "patch_id": "5179d8dc1ce1"
+  },
+  "acme/rocket#113": {
+   "number": 113,
+   "title": "Remove flag: example change",
+   "state": "OPEN",
+   "isDraft": true,
+   "url": "https://github.com/acme/rocket/pull/113",
+   "headRefName": "remove-flag",
+   "headRefOid": "bce34f957d46d29b3a5a662ad693d7dfd583e94d",
+   "baseRefName": "drop-old-loader",
+   "ci": "green",
+   "patch_id": "4e2fb8204cbf"
+  },
+  "acme/rocket-docs#7": {
+   "number": 7,
+   "title": "2.0 guide: example change",
+   "state": "OPEN",
+   "isDraft": true,
+   "url": "https://github.com/acme/rocket-docs/pull/7",
+   "headRefName": "docs-7",
+   "headRefOid": "0604f5298f23d990e8032c76c8cd2623e034c5e9",
+   "baseRefName": "main",
+   "ci": "green",
+   "patch_id": "50480fb2fb38"
+  }
+ },
+ "branches": {
+  "acme/rocket:release/2.0": "c0ffee0000000000000000000000000000000000",
+  "acme/rocket:main": "5eed5eed00000000000000000000000000000000",
+  "acme/rocket:release/2.0-all": "ba5eba1100000000000000000000000000000000"
+ },
+ "patch_history": {
+  "acme/rocket#103": {
+   "aaaa0103": "111111111111"
+  },
+  "acme/rocket#109": {
+   "bbbb0109": "999999999999"
+  }
+ }
+}

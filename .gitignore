@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.ruff_cache/
+.venv/
+
+# Working files the skill writes next to a config; keep them out of the repo.
+fetched.json
+patch-history.json
+page.html
+page.rows.json
+seed/
+shots/

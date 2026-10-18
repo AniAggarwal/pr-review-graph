@@ -1,0 +1,18 @@
+{
+  "name": "pr-review-graph",
+  "owner": {
+    "name": "Ani Aggarwal",
+    "url": "https://github.com/AniAggarwal"
+  },
+  "description": "A Claude Code skill that turns a set of GitHub PRs and issues into an interactive review graph.",
+  "plugins": [
+    {
+      "name": "pr-review-graph",
+      "source": "./",
+      "description": "Build and keep current an interactive review-graph Artifact for a set of GitHub PRs and issues, from one JSON config, with no page code to write.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "skills": ["./skills/pr-review-graph"]
+    }
+  ]
+}

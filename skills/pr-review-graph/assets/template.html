@@ -1,0 +1,389 @@
+<title>{{TITLE}}</title>
+<!-- pr-review-graph page template. Generated pages are built from a config by scripts/review_graph.py build; do not edit them by hand. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: summary chips; the PR graph (labeled chain rows, a bus for sibling ops, a dashed "waits for" bar, last last, other reviews) in its own scroll box; caption + legend; the selected PR's panel; the review queue list (the phone-friendly path). */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --panel:#fafbfc; --fg:#1a2130; --muted:#5a6476; --line:#cfd5df; --edge:#7d8696; --accent:#3d63d6;
+  --needs-b:#3d63d6; --needs-f:#eef2fd; --approved-b:#23925a; --approved-f:#e8f5ee; --fixups-b:#b77a0b; --fixups-f:#fbf3e3;
+  --merged-b:#8a93a5; --merged-f:#eff1f4; --branch-b:#8a93a5; --branch-f:#ffffff; --step:#4f74ea; --step-fg:#ffffff;
+  --font-body:"IBM Plex Sans",system-ui,sans-serif; --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14181f; --surface:#1b2028; --panel:#1f252e; --fg:#e6e9ef; --muted:#9aa3b5; --line:#343c49; --edge:#8d96a6; --accent:#8aa4ff;
+  --needs-b:#7d97ff; --needs-f:#1c2643; --approved-b:#4cc48a; --approved-f:#163623; --fixups-b:#e3a93d; --fixups-f:#3a2c10;
+  --merged-b:#8a93a5; --merged-f:#232830; --branch-b:#a3abba; --branch-f:#1d222a; --step:#7d97ff; --step-fg:#10141b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14181f; --surface:#1b2028; --panel:#1f252e; --fg:#e6e9ef; --muted:#9aa3b5; --line:#343c49; --edge:#8d96a6; --accent:#8aa4ff;
+  --needs-b:#7d97ff; --needs-f:#1c2643; --approved-b:#4cc48a; --approved-f:#163623; --fixups-b:#e3a93d; --fixups-f:#3a2c10;
+  --merged-b:#8a93a5; --merged-f:#232830; --branch-b:#a3abba; --branch-f:#1d222a; --step:#7d97ff; --step-fg:#10141b; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--font-body);padding:0 16px;padding-block:20px 48px;max-width:1320px;margin:0 auto}
+h1{font-size:1.45rem;margin:0;text-wrap:balance}
+h2{font-size:1.05rem;margin:28px 0 10px;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0;max-width:70ch}
+code,.mono{font-family:var(--font-mono);font-size:.86em;padding:1px 5px;border-radius:5px;background:var(--panel);border:1px solid var(--line)}
+a{color:var(--accent)}
+.strip{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:.85rem;font-variant-numeric:tabular-nums}
+.chip i{width:10px;height:10px;border-radius:3px;border:2px solid var(--b);background:var(--f)}
+.graphbox{margin-top:14px;overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.graphbox svg{display:block;margin:0 auto}
+svg .nnum{fill:var(--fg);font:700 15px var(--font-body)}
+svg .nname{fill:var(--muted);font:13px var(--font-body)}
+svg .bname{fill:var(--fg);font:700 15px var(--font-mono)}
+svg .rowlbl{fill:var(--muted);font:600 12px var(--font-body);letter-spacing:.09em}
+svg .elbl{fill:var(--muted);font:12.5px var(--font-body)}
+svg .bartxt{fill:var(--muted);font:12.5px var(--font-body)}
+svg .stepnum{fill:var(--step-fg);font:700 12px var(--font-body)}
+svg .rtag{fill:var(--surface);font:700 10.5px var(--font-body);letter-spacing:.02em}
+svg .fbn{fill:var(--fixups-b);font:600 11px var(--font-body)}
+svg g.node{cursor:pointer;outline:none}
+svg g.node:hover rect.box,svg g.node:focus-visible rect.box{stroke-width:3}
+svg g.node:focus-visible rect.ring{stroke:var(--accent)}
+.caption{color:var(--muted);max-width:78ch;margin:14px auto 0}
+.legend{display:flex;flex-wrap:wrap;gap:10px 22px;justify-content:center;margin:12px 0 0;color:var(--muted);font-size:.92rem}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend .sw{width:20px;height:14px;border-radius:4px;border:2px solid var(--b);background:var(--f)}
+.legend .st{width:18px;height:18px;border-radius:50%;background:var(--step);color:var(--step-fg);font-size:11px;font-weight:700;display:inline-grid;place-items:center}
+.legend .ln{width:34px;border-top:2px solid var(--edge)}
+.legend .ln.d{border-top-style:dashed}
+#panel{margin-top:16px;border:1px solid var(--line);border-left:5px solid var(--b,var(--line));border-radius:10px;background:var(--surface);padding:14px 16px;display:grid;gap:10px}
+#panel h3{margin:0;font-size:1.05rem;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:.9rem}
+.notes{margin:0;max-width:74ch;white-space:pre-wrap}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;font-size:.9rem;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.on{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button:disabled{opacity:.5;cursor:not-allowed}
+textarea{width:100%;min-height:84px;font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg)}
+.fb{border-top:1px solid var(--line);padding-top:8px;display:grid;gap:2px;min-width:0;overflow-wrap:anywhere}
+.fb small{color:var(--muted)}
+.warn{color:var(--fixups-b);font-size:.92rem}
+.msg{color:var(--muted);font-size:.88rem;min-height:1.2em}
+ol.queue{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.step{display:grid;gap:6px}
+.step > b{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--line);border-left:4px solid var(--b);border-radius:8px;background:var(--surface);cursor:pointer;text-align:left;width:100%;min-width:0}
+.row .txt{min-width:0;flex:1;overflow-wrap:anywhere}
+.row .stt{flex:none;color:var(--muted);font-size:.82rem}
+.empty{padding:28px 16px;color:var(--muted)}
+.status{margin:10px 0 0;font-size:.88rem;color:var(--muted)}
+.status.ok::before{content:"● ";color:var(--approved-b)}
+.status.bad{color:var(--fixups-b)}
+a.row{text-decoration:none;color:inherit}
+.titlebar{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:10px 16px}
+.sendbox{display:flex;flex-direction:column;align-items:flex-end;gap:2px;max-width:100%}
+.sendhint{font-size:.78rem;color:var(--muted);text-align:right}
+#sendall:not(:disabled){background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.sendchk{display:inline-flex;align-items:center;gap:6px;font-size:.9rem;color:var(--fg)}
+.sendchk input{width:16px;height:16px;accent-color:var(--accent)}
+.nodiff{color:var(--muted)}
+</style>
+
+<header>
+  <div class="titlebar"><h1>{{TITLE}}</h1><div class="sendbox"><button id="sendall" type="button" disabled>Send to Claude</button><span id="sendhint" class="sendhint">Connecting…</span></div></div>
+  <p class="sub">{{SUBTITLE}}</p>
+  <div class="strip" id="strip"></div>
+  <p class="status" id="status" role="status">Loading the PRs…</p>
+</header>
+<script>
+// Runs first, so a failure in the main script still shows on the page instead of a stuck "Loading".
+window.addEventListener("error",function(e){var el=document.getElementById("status");if(el){el.className="status bad";el.textContent="The page script failed: "+(e.message||e.error||"unknown error")+". The list below is a static snapshot."}});
+window.addEventListener("unhandledrejection",function(e){var el=document.getElementById("status");if(el){el.className="status bad";el.textContent="Live data failed: "+((e.reason&&(e.reason.message||e.reason.code))||e.reason)+". Showing the snapshot."}});
+</script>
+
+<div class="graphbox"><div class="empty" id="empty">The graph needs the page script; the review queue below works without it.</div><svg id="g" role="group" aria-label="PR graph: stacking, merge order and review order" hidden></svg></div>
+<p class="caption">{{CAPTION}}</p>
+<div class="legend">{{LEGEND}}</div>
+
+<section id="panel" hidden aria-live="polite"></section>
+
+<h2>Review queue</h2>
+<ol class="queue" id="queue"><!--STATIC_QUEUE--></ol>
+<script type="application/json" id="pageconfig">/*PAGECONFIG*/</script>
+<script type="application/json" id="snapshot">/*SNAPSHOT*/</script>
+
+<script>
+(()=>{
+// Vocabularies come from the config (scripts/review_graph.py build embeds them in #pageconfig).
+const CFG=JSON.parse(document.getElementById("pageconfig").textContent);
+const STATUS=Object.fromEntries(Object.entries(CFG.statuses).map(([k,v])=>[k,{label:v.label,v:v.color}]));
+const VERDICTS=CFG.verdicts, DECISION_VERDICTS=CFG.decision_verdicts, STEP_NAMES=CFG.steps||{};
+const ROWS=CFG.rows||{};
+const S={nodes:[],edges:[],reviews:{},feedback:[],sel:null,db:null,me:null,canWrite:null,comments:null,sendState:"off"};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const docs=snap=>snap.docs.filter(d=>d.exists).map(d=>({_id:d.id,...d.data()}));
+// A verdict counts at the current head. An approval at an older head stands only if the PR's own patch-id is
+// unchanged (a re-parent); otherwise the box asks for a re-check. Other stale verdicts fall back to the node's status.
+const effective=n=>{const r=S.reviews[n.id];
+  if(!r||!r.verdict||n.status==="merged"||n.status==="closed") return n.status; // merged/closed on GitHub beats any verdict
+  // The latest verdict row decides; the node's own re-check (from the config's older reviewed_head) no longer applies.
+  if(r.head===n.head) return r.verdict;
+  if(r.verdict==="approved"||r.verdict==="merge_now"){
+    const was=r.patch_id||(n.patch_ids||{})[r.head]||"";
+    return was&&n.patch_id&&was===n.patch_id?r.verdict:"recheck";
+  }
+  return n.status;};
+const vis=k=>(STATUS[k]||STATUS.needs_review).v;
+const bvar=k=>`var(--${vis(k)}-b)`, fvar=k=>`var(--${vis(k)}-f)`;
+const topLine=n=>n.top||(n.kind==="branch"?n.title:`#${n.number}`);
+const labelOf=k=>(STATUS[k]||{}).label||k;
+
+function renderStrip(){
+  const c={};S.nodes.filter(n=>n.kind!=="branch"&&n.kind!=="heading").forEach(n=>{const k=effective(n);c[k]=(c[k]||0)+1});
+  $("strip").innerHTML=Object.entries(c).map(([k,v])=>`<span class="chip" style="--b:${bvar(k)};--f:${fvar(k)}"><i></i>${esc(labelOf(k))} <b>${v}</b></span>`).join("");
+}
+
+// Fixed row geometry; nodes are placed by group and order, so agents only update db rows.
+const G={pad:24,w:148,h:58,gx:28,x0:56,w0:156,xRoot:244,xChain:418,yMain:56,yEmb:110,yCap:240,yBus:368,yStd:392,yBar:506,hBar:30,yClean:584,yOther:712};
+function layout(){
+  const by={};S.nodes.forEach(n=>{const g=n.group||"other";(by[g]??=[]).push(n)});
+  Object.values(by).forEach(a=>a.sort((x,y)=>(x.order??0)-(y.order??0)));
+  const P=G.w+G.gx,pos={};
+  const place=(arr,x0,y,w=G.w,step=P)=>arr.forEach((n,i)=>pos[n.id]={x:x0+i*step,y,w,h:G.h});
+  (by.base||[]).forEach(n=>pos[n.id]={x:G.x0,y:n.order===0?G.yMain:G.yCap,w:G.w0,h:G.h});
+  (by.root||[]).forEach(n=>pos[n.id]={x:G.xRoot,y:G.yCap,w:G.w,h:G.h});
+  place(by.chain1||[],G.xChain,G.yEmb);
+  place(by.chain2||[],G.xChain,G.yCap);
+  place(by.siblings||[],G.xChain,G.yStd);
+  // The bar spans every row it collects from (chains and siblings), and never less than three boxes.
+  const barR=Math.max(G.xChain+3*P-G.gx,...[...(by.chain1||[]),...(by.chain2||[]),...(by.siblings||[])].map(n=>pos[n.id].x+pos[n.id].w));
+  place(by.last||[],G.xChain+2*P,G.yClean,196,224);
+  place(by.other||[],G.xChain,G.yOther,G.w+20,G.w+20+G.gx);
+  (by.bar||[]).forEach(n=>pos[n.id]={x:G.xChain,y:G.yBar,w:barR-G.xChain,h:G.hBar,bar:true});
+  const right=Math.max(barR+36,...Object.values(pos).map(p=>p.x+p.w))+G.pad;
+  return {by,pos,barR,width:right,height:G.yOther+G.h+G.pad+8};
+}
+
+function renderGraph(){
+  const svg=$("g");
+  if(!S.nodes.length){$("empty").hidden=false;$("empty").textContent="No PRs yet. Claude adds them here as the agents report.";svg.setAttribute("hidden","");return}
+  $("empty").hidden=true;svg.removeAttribute("hidden"); // SVGElement has no .hidden property, so the attribute must go
+  const {by,pos,barR,width,height}=layout();
+  svg.setAttribute("viewBox",`0 0 ${width} ${height}`);svg.removeAttribute("width");svg.removeAttribute("height");
+  // Fit the container on wide screens, never past natural size; below ~1000px the box scrolls instead of shrinking text.
+  svg.style.width="100%";svg.style.height="auto";svg.style.maxWidth=width+"px";svg.style.minWidth=Math.min(width,1000)+"px";
+  const group=id=>(S.nodes.find(n=>n.id===id)||{}).group;
+  const L=[],arrow='marker-end="url(#ah)"',solid=`stroke="var(--edge)" stroke-width="1.6" fill="none"`,dash=`${solid} stroke-dasharray="6 5"`;
+  const mid=p=>p.y+p.h/2,spineX=G.xChain-16,rightX=barR+28;
+  let busDrawn=false;
+  for(const e of S.edges){
+    const a=pos[e.from],b=pos[e.to];if(!a||!b)continue;
+    const ga=group(e.from),gb=group(e.to);
+    if(e.kind==="final"){ // trunk -> main: vertical, labeled
+      const x=a.x+a.w/2;L.push(`<path d="M${x} ${a.y} L${x} ${b.y+b.h+6}" ${solid} ${arrow}/>`);
+      if(e.label) e.label.split("|").forEach((t,i,arr)=>L.push(`<text class="elbl" x="${x+10}" y="${(a.y+b.y+b.h)/2+4+(i-(arr.length-1)/2)*16}">${esc(t)}</text>`));
+    }else if(e.kind==="waits_for"){
+      if(gb!=="bar")continue;
+      if(ga==="siblings"){const x=a.x+a.w/2;L.push(`<path d="M${x} ${a.y+a.h} L${x} ${b.y-4}" ${dash} ${arrow}/>`)}
+      else{const y=mid(a),by_=b.y+b.h/2;L.push(`<path d="M${a.x+a.w} ${y} L${rightX} ${y} L${rightX} ${by_} L${b.x+b.w+6} ${by_}" ${dash} ${arrow}/>`)}
+    }else if(ga==="bar"){ // bar -> first last
+      const x=b.x+b.w/2;L.push(`<path d="M${x} ${a.y+a.h} L${x} ${b.y-4}" ${solid} ${arrow}/>`);
+    }else if(ga===gb||(ga==="base"&&gb==="root")||(mid(a)===mid(b)&&b.x>a.x)){ // same row
+      L.push(`<path d="M${a.x+a.w} ${mid(a)} L${b.x-6} ${mid(b)}" ${solid} ${arrow}/>`);
+    }else if(ga==="root"&&gb==="siblings"){ // siblings hang off one bus
+      const x=b.x+b.w/2;
+      if(!busDrawn){const last=Math.max(...(by.siblings||[]).map(n=>pos[n.id].x+G.w/2));L.push(`<path d="M${a.x+a.w} ${mid(a)} C${spineX} ${mid(a)},${spineX} ${mid(a)},${spineX} ${mid(a)+16} L${spineX} ${G.yBus-8} Q${spineX} ${G.yBus},${spineX+8} ${G.yBus} L${last} ${G.yBus}" ${solid}/>`);busDrawn=true}
+      L.push(`<path d="M${x} ${G.yBus} L${x} ${b.y-6}" ${solid} ${arrow}/>`);
+    }else if(ga==="root"){ // root -> head of a chain on another row
+      L.push(`<path d="M${a.x+a.w} ${mid(a)} C${spineX} ${mid(a)},${spineX} ${mid(b)},${b.x-6} ${mid(b)}" ${solid} ${arrow}/>`);
+    }else{
+      L.push(`<path d="M${a.x+a.w} ${mid(a)} C${(a.x+a.w+b.x)/2} ${mid(a)},${(a.x+a.w+b.x)/2} ${mid(b)},${b.x-6} ${mid(b)}" ${solid} ${arrow}/>`);
+    }
+  }
+  // Row labels
+  const lbl=(t,x,y,anchor="start")=>L.push(`<text class="rowlbl" x="${x}" y="${y}" text-anchor="${anchor}">${esc(t)}</text>`);
+  if(by.chain1) lbl(ROWS.chain1,G.xChain,G.yEmb-14);
+  if(by.chain2) lbl(ROWS.chain2,G.xChain,G.yCap-14);
+  if(by.siblings) lbl(ROWS.siblings,G.xChain,G.yBus-14);
+  if(by.last) lbl(ROWS.last,pos[by.last[0].id].x-26,G.yClean+G.h/2+4,"end");
+  if(by.other) lbl(ROWS.other,G.xChain,G.yOther-14);
+  // Nodes
+  const N=[];
+  for(const n of S.nodes){
+    const p=pos[n.id];if(!p||n.kind==="heading")continue;
+    const k=effective(n),sel=S.sel===n.id,fb=S.feedback.filter(f=>f.node_id===n.id&&!f.resolved).length;
+    const aria=esc(`${topLine(n)} ${n.label||n.title}: ${labelOf(k)}`);
+    if(p.bar){
+      N.push(`<g class="node" data-id="${esc(n.id)}" tabindex="0" role="button" aria-label="${aria}"><rect class="box" x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="6" fill="var(--panel)" stroke="var(--edge)" stroke-width="${sel?3:1.4}" stroke-dasharray="5 4"/><text class="bartxt" x="${p.x+p.w/2}" y="${p.y+p.h/2+4.5}" text-anchor="middle">${esc(n.label||n.title)}</text></g>`);
+      continue;
+    }
+    const branch=n.kind==="branch",cls=branch?"bname":"nnum",cx=p.x+p.w/2;
+    const recheck=k==="recheck"?`<rect x="${p.x+p.w-64}" y="${p.y-9}" width="58" height="17" rx="8.5" fill="var(--fixups-b)"/><text class="rtag" x="${p.x+p.w-35}" y="${p.y+3.5}" text-anchor="middle">re-check</text>`:"";
+    const sub=n.label||"",fbTxt=fb?`<text class="fbn" x="${p.x+p.w-8}" y="${p.y+p.h-7}" text-anchor="end">${fb} note${fb>1?"s":""}</text>`:"";
+    N.push(`<g class="node" data-id="${esc(n.id)}" tabindex="0" role="button" aria-label="${aria}">
+      <rect class="ring" x="${p.x-4}" y="${p.y-4}" width="${p.w+8}" height="${p.h+8}" rx="11" fill="none" stroke="${sel?bvar(k):"none"}" stroke-width="1.5" opacity=".55"/>
+      <rect class="box" x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="7" fill="${fvar(k)}" stroke="${bvar(k)}" stroke-width="${sel?3:1.8}"/>
+      <text class="${cls}" x="${cx}" y="${sub?p.y+25:p.y+p.h/2+5}" text-anchor="middle">${esc(topLine(n))}</text>
+      ${sub?`<text class="nname" x="${cx}" y="${p.y+45}" text-anchor="middle">${esc(sub)}</text>`:""}${fbTxt}${recheck}</g>`);
+  }
+  // Review-order circles on the first node of each run in a row
+  const C=[];
+  for(const g of ["root","chain1","chain2","siblings","last","other"]){
+    let prev=null;
+    for(const n of by[g]||[]){
+      const st=n.review_step,k=effective(n),done=vis(k)==="approved"||vis(k)==="merged";
+      if(done)continue; // approved/merged boxes neither get a circle nor break a run
+      if(st&&st!==prev){const p=pos[n.id];C.push(`<circle cx="${p.x}" cy="${p.y}" r="12" fill="var(--step)" stroke="var(--surface)" stroke-width="2"/><text class="stepnum" x="${p.x}" y="${p.y+4.2}" text-anchor="middle">${esc(st)}</text>`)}
+      prev=st;
+    }
+  }
+  svg.innerHTML=`<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--edge)"/></marker></defs>`+L.join("")+N.join("")+C.join("");
+  svg.querySelectorAll("g.node").forEach(g=>{const go=()=>select(g.dataset.id);g.addEventListener("click",go);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
+}
+
+function renderQueue(){
+  const steps={};S.nodes.filter(n=>n.review_step&&n.kind!=="heading").forEach(n=>(steps[n.review_step]??=[]).push(n));
+  const done=S.nodes.filter(n=>!n.review_step&&n.kind!=="branch"&&n.kind!=="heading");
+  const item=n=>{const k=effective(n);return `<button class="row" data-id="${esc(n.id)}" style="--b:${bvar(k)}"><span class="txt"><b>${esc(topLine(n))}</b> ${esc(n.title)}</span><span class="stt">${esc(labelOf(k))}</span></button>`};
+  $("queue").innerHTML=Object.keys(steps).map(Number).sort((a,b)=>a-b).map(s=>`<li class="step"><b>${s}. ${esc(STEP_NAMES[s]||"Step "+s)}</b>${steps[s].sort((a,b)=>(a.order??0)-(b.order??0)).map(item).join("")}</li>`).join("")
+    +(done.length?`<li class="step"><b>Already decided</b>${done.map(item).join("")}</li>`:"");
+  $("queue").querySelectorAll(".row").forEach(b=>b.addEventListener("click",()=>select(b.dataset.id)));
+}
+
+function select(id){S.sel=id;renderGraph();renderPanel();$("panel").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"})}
+
+function renderPanel(){
+  const el=$("panel"),n=S.nodes.find(x=>x.id===S.sel);
+  // Keep an unsaved draft across live re-renders.
+  const draftEl=$("fbtext"),draft=draftEl&&el.dataset.node===S.sel?draftEl.value:"";el.dataset.node=S.sel||"";
+  if(!n||n.kind==="heading"){el.hidden=true;return}
+  const k=effective(n),r=S.reviews[n.id],fb=S.feedback.filter(f=>f.node_id===n.id).sort((a,b)=>String(a.at).localeCompare(String(b.at)));
+  const verdicts=n.kind==="decision"?DECISION_VERDICTS:VERDICTS,canAct=n.kind!=="branch"&&S.db&&S.canWrite!==false;
+  const stale=r&&r.head&&n.head&&r.head!==n.head;
+  el.style.setProperty("--b",bvar(k));el.hidden=false;
+  el.innerHTML=`<h3>${esc(topLine(n))}: ${esc(n.title)}</h3>
+    <div class="meta">${n.url?`<a href="${esc(n.url)}" target="_blank" rel="noopener">Open on GitHub</a>`:""}
+      ${diffLink(n,r)}
+      ${n.head?`<span>head <code>${esc(n.head)}</code></span>`:""}${n.base?`<span>on <code>${esc(n.base)}</code></span>`:""}
+      ${n.ci?`<span>CI ${esc(n.ci)}</span>`:""}<span style="color:${bvar(k)}">${esc(labelOf(k))}</span></div>
+    ${k==="recheck"?`<div class="warn">Approved at <code>${esc((r&&r.head)||n.approved_head||n.reviewed_head||"?")}</code>, but this PR's own patch has changed since (patch-id <code>${esc(((r&&r.patch_id)||(n.patch_ids||{})[(r&&r.head)||n.approved_head||n.reviewed_head])||"unknown")}</code> → <code>${esc(n.patch_id||"?")}</code>). Re-check the delta.</div>`:""}
+    ${n.reparented||(r&&r.head!==n.head&&k===r.verdict)?`<div class="meta">The head moved, but the patch-id is unchanged (re-parented), so the approval stands.</div>`:""}
+    ${n.notes?`<p class="notes">${esc(n.notes)}</p>`:""}
+    ${r?`<div class="${stale?"warn":"meta"}">Your verdict: ${esc((verdicts.find(v=>v[0]===r.verdict)||[0,r.verdict])[1])}${r.head?` at <code>${esc(r.head)}</code>`:""}${stale?". The head has moved since, so Claude will check before acting.":""}</div>`:""}
+    ${canAct?`<div class="btns" role="group" aria-label="Your verdict">${verdicts.map(([v,l])=>`<button data-v="${v}" class="${r&&r.verdict===v&&!stale?"on":""}">${l}</button>`).join("")}</div>
+    <label for="fbtext" class="meta">Feedback for this ${n.kind==="decision"?"decision":"PR"}</label>
+    <textarea id="fbtext" placeholder="What should change, or a question for Claude…"></textarea>
+    <div class="btns"><button id="sendfb">Save feedback</button>${S.comments?`<label class="sendchk" title="${esc(SEND_HINT[S.sendState]||"")}"><input type="checkbox" id="fbsend" ${S.sendChecked===false?"":"checked"}> Send to Claude now</label>`:""}</div>`:n.kind==="branch"?"":`<div class="meta">${S.db?"You can view this artifact but not change its data, so verdicts can't be saved.":"Live data isn't connected, so verdicts and feedback can't be saved here. Use the GitHub link."}</div>`}
+    <div class="msg" id="msg"></div>
+    ${fb.map(f=>`<div class="fb"><span>${esc(f.text)}</span><small>${esc(String(f.at||"").replace("T"," ").slice(0,16))} UTC · ${f.resolved?"resolved":"open"}</small>${f.reply?`<span><b>Claude:</b> ${esc(f.reply)}</span>`:""}</div>`).join("")}`;
+  const msg=t=>{$("msg").textContent=t};
+  if(draft&&$("fbtext")) $("fbtext").value=draft;
+  const fbs=$("fbsend");if(fbs) fbs.addEventListener("change",()=>{S.sendChecked=fbs.checked});
+  el.querySelectorAll("button[data-v]").forEach(b=>b.addEventListener("click",async()=>{
+    el.querySelectorAll("button[data-v]").forEach(x=>x.disabled=true);
+    try{await S.db.doc("reviews/"+n.id).set({node_id:n.id,verdict:b.dataset.v,head:n.head||null,patch_id:n.patch_id||null,by:S.me,at:new Date().toISOString()});msg("Saved. Claude picks this up on its next read.")}
+    catch(e){msg(e&&e.code==="invalid_argument"?"You don't have edit access here, so this wasn't saved.":"Couldn't save. Try again in a moment.")}
+    finally{el.querySelectorAll("button[data-v]").forEach(x=>x.disabled=false)}}));
+  const send=$("sendfb");
+  if(send) send.addEventListener("click",async()=>{
+    const t=$("fbtext").value.trim();if(!t){msg("Write something first.");return}
+    send.disabled=true;
+    const box=$("fbsend");S.sendChecked=box?box.checked:S.sendChecked;
+    // Mint the row id now, so the comment can name it, and start the send while we are still inside the click:
+    // sendToClaude needs the viewer's own recent gesture, so it must not wait for the db write first.
+    const ref=S.db.collection("feedback").doc();
+    const sending=box&&box.checked&&S.comments?sendToClaude(send,[fbLine({_id:ref.id,node_id:n.id,head:n.head,text:t})]):null;
+    if(sending) msg("Saving and sending to Claude… If a consent prompt appears, allow it.");
+    let saved=false;
+    try{await ref.set({node_id:n.id,text:t,head:n.head||null,author:S.me,at:new Date().toISOString(),resolved:false,reply:""});saved=true;$("fbtext").value=""}
+    catch(e){msg(e&&e.code==="invalid_argument"?"You don't have edit access here, so this wasn't saved.":"Couldn't save ("+errText(e)+"). Try again in a moment.")}
+    if(sending){
+      try{const res=await sending;if(saved) await stamp([ref.id],[],res.threadId);msg(saved?"Saved, and sent to Claude as a comment.":"Sent to Claude as a comment, but the row didn't save.")}
+      catch(e2){msg((saved?"Saved, so Claude will still read it. ":"")+"Not sent as a comment: "+sendErr(e2))}
+    }else if(saved) msg("Feedback saved. Claude reads it from the review data.");
+    send.disabled=false;
+    refreshSendState();});
+}
+
+// "Diff since your last review": an explicit review-branch link from the config wins; otherwise compare the head
+// the user last gave a verdict on (or the config's reviewed_head) with the current head.
+function diffLink(n,r){
+  const a=(href,t)=>`<a href="${esc(href)}" target="_blank" rel="noopener">${esc(t)}</a>`;
+  if(n.compare_url) return a(n.compare_url,n.compare_label||"Diff since your last review");
+  const seen=(r&&r.head)||n.reviewed_head||"";
+  if(!seen||!n.head||!n.repo) return "";
+  if(seen===n.head) return `<span class="nodiff">No changes since your last review (<code>${esc(seen)}</code>)</span>`;
+  return a(`https://github.com/${n.repo}/compare/${seen}..${n.head}`,`Diff since your last review (${seen}..${n.head})`);
+}
+// canSendToClaude is advisory only: it is a snapshot that can lag a watch that was just armed, so the controls never
+// wait on it. The send itself decides, and its result or error is shown next to the control.
+const SEND_HINT={available:"A Claude session is watching this page.",writers_only:"Only editors of this page can send to Claude.",no_session:"No Claude session seemed to be watching when last checked; sending will say if it fails.",off:"Sending to Claude may be off in this view; sending will say if it fails.",unknown:"Couldn't tell whether Claude is watching; sending will say if it fails."};
+const unsent=()=>({fb:S.feedback.filter(f=>!f.resolved&&!f.sent_at),rv:Object.values(S.reviews).filter(r=>r.verdict&&!r.sent_at)});
+function renderSendAll(){
+  const b=$("sendall"),h=$("sendhint"),{fb,rv}=unsent(),n=fb.length+rv.length;
+  if(S.sending) return;
+  if(!S.comments){b.disabled=true;h.textContent=S.db?"Sending to Claude isn't available in this view; feedback still saves, and Claude reads it.":"Connect to live data to send.";return}
+  b.textContent=n?`Send ${n} new item${n>1?"s":""} to Claude`:"Send to Claude";
+  b.disabled=!n;
+  if(!S.lastSend) h.textContent=(n?"Batches unsent feedback and verdicts into one comment. ":"Nothing new to send. ")+(SEND_HINT[S.sendState]||"");
+}
+// Never awaited by the page: a call that doesn't answer must not block anything.
+function refreshSendState(){if(!S.comments)return;Promise.race([S.comments.canSendToClaude(),new Promise(r=>setTimeout(()=>r("unknown"),4000))]).then(v=>{S.sendState=SEND_HINT[v]?v:"unknown"},()=>{S.sendState="unknown"}).then(renderSendAll)}
+const nodeName=id=>{const n=S.nodes.find(x=>x.id===id);return n?`${topLine(n)} ${n.label||n.title}`:id};
+const clip=(t,max)=>t.length>max?t.slice(0,max-1)+"…":t;
+// Post one comment to Claude (the platform notifies the watching session), then stamp the rows as sent.
+// Comments.sendToClaude posts a new thread at the anchor AND brings Claude into it (editors only, from a recent click).
+async function sendToClaude(anchorEl,lines){
+  const text=clip(`From the review graph (${new Date().toISOString().slice(0,16)}Z):\n`+lines.join("\n"),3800);
+  const anchor=await S.comments.anchorFor(anchorEl);
+  return S.comments.sendToClaude({anchor,text});
+}
+async function stamp(fbIds,rvIds,threadId){
+  const at=new Date().toISOString();
+  for(const id of fbIds){try{await S.db.doc("feedback/"+id).update({sent_at:at,sent_thread:threadId})}catch(e){}}
+  for(const id of rvIds){try{await S.db.doc("reviews/"+id).update({sent_at:at})}catch(e){}}
+}
+const fbLine=f=>`- ${nodeName(f.node_id)} (head ${f.head||"?"}) feedback: ${clip(f.text,600)} [feedback/${f._id}]`;
+const rvLine=r=>`- ${nodeName(r.node_id||r._id)} verdict: ${r.verdict} at head ${r.head||"?"} [reviews/${r.node_id||r._id}]`;
+const SEND_ERR={consent_required:"you didn't allow this page to comment for you (the prompt shows again after a reload)",
+  forbidden:"commenting from this page is off for you here (turn it on from the comment panel in claude.ai)",
+  claude_unavailable:"no Claude session could take it, or this isn't an editor's click; nothing was posted",
+  rate_limited:"sending too fast; wait a moment, then press Send again",
+  invalid:"the comment text was rejected",unavailable:"comments are briefly unavailable; try once more",
+  not_granted:"this view doesn't allow comments",capability_disabled:"this view doesn't allow comments",capability_removed:"this viewer is too old to send to Claude"};
+const sendErr=e=>{const c=e&&e.code;return `${SEND_ERR[c]||"it failed"} (${c||"error"}${e&&e.message?": "+e.message:""}).`};
+
+function renderAll(){renderStrip();renderGraph();renderQueue();renderPanel();renderSendAll()}
+
+const status=(t,cls="")=>{const el=$("status");el.className="status "+cls;el.textContent=t};
+const errText=e=>(e&&(e.code?e.code+(e.message?": "+e.message:""):e.message))||String(e);
+
+// 1. Render the embedded snapshot right away, so the page is useful even if the db never answers.
+let snap={nodes:[],edges:[],at:""};
+try{snap=JSON.parse($("snapshot").textContent)}catch(e){status("The embedded snapshot is unreadable: "+errText(e),"bad")}
+S.nodes=snap.nodes||[];S.edges=snap.edges||[];S.reviews=Object.fromEntries((snap.reviews||[]).map(r=>[r.node_id,r]));renderAll();
+status(`Showing the snapshot from ${snap.at||"publish time"}. Connecting to live data…`);
+
+// 2. Then switch to live rows from the db.
+(async()=>{
+  if(!window.claude||typeof window.claude.use!=="function"){status(`Live data isn't available in this view. Showing the snapshot from ${snap.at}; verdicts and feedback can't be saved here.`,"bad");return}
+  let db=null;
+  try{db=await window.claude.use("db")}catch(e){status("Couldn't reach the review data ("+errText(e)+"). Showing the snapshot.","bad");return}
+  if(!db){status(`Live data isn't available (signed out, or this view can't run it). Showing the snapshot from ${snap.at}.`,"bad");return}
+  S.db=db;
+  try{const user=await window.claude.use("user");if(user){S.me=await user.id();S.canWrite=await user.can("data.write")}}catch(e){/* identity is optional; writes still decide */}
+  try{S.comments=await window.claude.use("comments")}catch(e){S.comments=null}
+  refreshSendState();setInterval(refreshSendState,30000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshSendState()});
+  $("sendall").addEventListener("click",async()=>{
+    const b=$("sendall"),h=$("sendhint"),{fb,rv}=unsent();if(!fb.length&&!rv.length)return;
+    const sending=sendToClaude(b,[...rv.map(rvLine),...fb.map(fbLine)]); // started inside the click
+    S.sending=true;b.disabled=true;h.textContent="Sending… If a consent prompt appears, allow it.";
+    try{const res=await sending;await stamp(fb.map(f=>f._id),rv.map(r=>r.node_id||r._id),res.threadId);S.lastSend="ok";h.textContent=`Sent ${fb.length+rv.length} item${fb.length+rv.length>1?"s":""} to Claude as one comment. Replies come in the comment thread and in each feedback row.`}
+    catch(e){S.lastSend="err";h.textContent="Not sent: "+sendErr(e)+" Your feedback is still saved, and Claude reads it."}
+    finally{S.sending=false;renderSendAll();setTimeout(()=>{S.lastSend=null;renderSendAll()},15000)}
+  });
+  const fail=what=>e=>status(`Live ${what} stopped (${errText(e)}). Reload the page; the last data shown stays.`,"bad");
+  let live=false;
+  db.collection("nodes").onSnapshot(s=>{const rows=docs(s);if(rows.length){S.nodes=rows}renderAll();if(!live){live=true;status(rows.length?"Live: changes from Claude and your clicks show here as they happen.":"Live, but the review data is empty; showing the snapshot.",rows.length?"ok":"bad")}},fail("PR list"));
+  db.collection("edges").onSnapshot(s=>{const rows=docs(s);if(rows.length){S.edges=rows}renderGraph()},fail("graph lines"));
+  db.collection("reviews").onSnapshot(s=>{S.reviews=Object.fromEntries(docs(s).map(r=>[r.node_id||r._id,r]));renderAll()},fail("verdicts"));
+  db.collection("feedback").onSnapshot(s=>{S.feedback=docs(s);renderGraph();renderPanel();renderSendAll()},fail("feedback"));
+})().catch(e=>status("Live data failed: "+errText(e)+". Showing the snapshot.","bad"));
+})();
+</script>

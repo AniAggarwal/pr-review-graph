@@ -1,0 +1,164 @@
+{
+  "title": "Rocket 2.0 Review Graph",
+  "subtitle": "Every PR waiting on you for the Rocket 2.0 release. Click a box to see its diff, leave feedback or record your verdict. Claude reads what you save here.",
+  "caption": "Everything merges into the `release/2.0` trunk, and one PR lands the trunk on main at the end. #101 sits on the trunk; both chains and the standalone PRs stack on #101. #112 sits on `release/2.0-all`, a base-only branch that combines every PR above, so #112 and #113 merge last. Circled numbers are your review order.",
+  "trunk": {
+    "id": "trunk",
+    "repo": "acme/rocket",
+    "branch": "release/2.0",
+    "name": "release/2.0",
+    "label": "trunk: cut ✓"
+  },
+  "target": {
+    "id": "main",
+    "repo": "acme/rocket",
+    "branch": "main",
+    "name": "main"
+  },
+  "bar": {
+    "id": "all-branch",
+    "repo": "acme/rocket",
+    "branch": "release/2.0-all",
+    "name": "All PRs merged",
+    "label": "after every PR above is in: release/2.0-all ({sha}, base-only, no PR)"
+  },
+  "final_label": "one PR once|everything is in",
+  "rows": {
+    "chain1": "ENGINE CHAIN",
+    "chain2": "PLUGINS CHAIN",
+    "siblings": "STANDALONE FIXES, EACH DIRECTLY ON #101",
+    "last": "LAST: CLEANUP",
+    "other": "OTHER REVIEWS"
+  },
+  "steps": {
+    "1": "Core loader",
+    "2": "Engine chain",
+    "3": "Plugins chain",
+    "4": "Standalone fixes",
+    "5": "Cleanup, merges last",
+    "6": "Docs"
+  },
+  "edges": "infer",
+  "waits_for": "auto",
+  "nodes": [
+    {
+      "repo": "acme/rocket",
+      "number": 101,
+      "group": "root",
+      "label": "core loader",
+      "review_step": 1,
+      "status": "rereview",
+      "reviewed_head": "1a2b3c4d",
+      "notes": "Shared loader every other PR builds on."
+    },
+    {
+      "repo": "acme/rocket",
+      "number": 102,
+      "group": "chain1",
+      "order": 0,
+      "label": "engine api",
+      "review_step": 2
+    },
+    {
+      "repo": "acme/rocket",
+      "number": 103,
+      "group": "chain1",
+      "order": 1,
+      "label": "engine io",
+      "review_step": 2,
+      "status": "approved",
+      "reviewed_head": "aaaa0103",
+      "notes": "Approved at aaaa0103; its own patch changed since, so it shows as re-check."
+    },
+    {
+      "repo": "acme/rocket",
+      "number": 104,
+      "group": "chain1",
+      "order": 2,
+      "label": "engine cli",
+      "review_step": 2
+    },
+    {
+      "repo": "acme/rocket",
+      "number": 105,
+      "group": "chain2",
+      "order": 0,
+      "label": "plugin host",
+      "review_step": 3,
+      "status": "fixups"
+    },
+    {
+      "repo": "acme/rocket",
+      "number": 106,
+      "group": "chain2",
+      "order": 1,
+      "label": "plugin sdk",
+      "review_step": 3
+    },
+    {
+      "repo": "acme/rocket",
+      "number": 107,
+      "group": "siblings",
+      "order": 0,
+      "label": "fix timeouts",
+      "review_step": 4
+    },
+    {
+      "repo": "acme/rocket",
+      "number": 108,
+      "group": "siblings",
+      "order": 1,
+      "label": "fix retries",
+      "review_step": 4
+    },
+    {
+      "repo": "acme/rocket",
+      "number": 109,
+      "group": "siblings",
+      "order": 2,
+      "label": "fix logging",
+      "review_step": 4,
+      "status": "approved",
+      "reviewed_head": "bbbb0109",
+      "notes": "Approved at bbbb0109; only its parent moved (same patch-id), so it stays approved."
+    },
+    {
+      "repo": "acme/rocket",
+      "number": 112,
+      "group": "last",
+      "order": 0,
+      "label": "drop old loader",
+      "review_step": 5,
+      "compare_url": "https://github.com/acme/rocket/compare/aaaa1111..bbbb2222",
+      "compare_label": "Diff since your review (review branch)"
+    },
+    {
+      "repo": "acme/rocket",
+      "number": 113,
+      "group": "last",
+      "order": 1,
+      "label": "remove flag",
+      "review_step": 5
+    },
+    {
+      "repo": "acme/rocket-docs",
+      "number": 7,
+      "id": "docs-7",
+      "top": "docs #7",
+      "group": "other",
+      "order": 0,
+      "label": "2.0 guide",
+      "review_step": 6
+    },
+    {
+      "id": "decision-load-test",
+      "kind": "decision",
+      "top": "Decision",
+      "title": "Run the load test before release (~$20)?",
+      "group": "other",
+      "order": 1,
+      "label": "load test",
+      "status": "decision"
+    }
+  ]
+}

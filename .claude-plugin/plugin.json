@@ -1,0 +1,13 @@
+{
+  "name": "pr-review-graph",
+  "version": "1.0.0",
+  "description": "Build and keep current an interactive review-graph Artifact for a set of GitHub PRs and issues, from one JSON config, with no page code to write.",
+  "author": {
+    "name": "Ani Aggarwal",
+    "url": "https://github.com/AniAggarwal"
+  },
+  "homepage": "https://github.com/AniAggarwal/pr-review-graph",
+  "repository": "https://github.com/AniAggarwal/pr-review-graph",
+  "license": "MIT",
+  "keywords": ["github", "pull-requests", "code-review", "artifact", "stacked-prs", "review-graph"]
+}
